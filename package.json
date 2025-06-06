@@ -1,0 +1,10 @@
+{
+  "name": "field-notes-parser",
+  "version": "1.0.0",
+  "description": "AI intelligence parser for creative industry professionals",
+  "type": "module",
+  "dependencies": {
+    "@postlight/parser": "^2.2.3"
+  },
+  "keywords": ["ai", "creative", "intelligence", "parser", "field-notes"]
+}
