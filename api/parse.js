@@ -12,17 +12,29 @@ export default async function handler(req, res) {
     return;
   }
 
-  const { url } = req.query;
+  // Handle both GET and POST requests for URL parameter
+  let url;
+  if (req.method === 'POST') {
+    // Handle POST request with JSON body
+    const body = req.body;
+    url = body?.url;
+  } else {
+    // Handle GET request with query parameter
+    url = req.query.url;
+  }
   
   if (!url) {
     return res.status(400).json({ 
       error: 'URL required',
-      example: 'https://your-app.vercel.app/api/parse?url=https://example.com/article'
+      example: 'GET: https://your-app.vercel.app/api/parse?url=https://example.com/article OR POST: {"url": "https://example.com/article"}',
+      method: req.method,
+      received_query: req.query,
+      received_body: req.body
     });
   }
   
   try {
-    console.log('Parsing URL:', url);
+    console.log('Parsing URL:', url, 'Method:', req.method);
     const result = await Parser.parse(url);
     
     // Field Notes Intelligence: Focus on creative industry + AI impact
@@ -138,7 +150,13 @@ export default async function handler(req, res) {
       
       // Future FOIA preparation
       foia_potential: companyMentions.length > 0 && totalRelevance > 4,
-      needs_deeper_research: aiScore > 3 && creativityScore > 2
+      needs_deeper_research: aiScore > 3 && creativityScore > 2,
+      
+      // Debug info
+      debug: {
+        method_used: req.method,
+        url_received: url
+      }
     });
     
   } catch (error) {
@@ -147,7 +165,8 @@ export default async function handler(req, res) {
       success: false,
       error: 'Parse failed', 
       details: error.message,
-      url: url
+      url: url,
+      method: req.method
     });
   }
 }
