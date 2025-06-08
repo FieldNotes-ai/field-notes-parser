@@ -113,7 +113,92 @@ export default async function handler(req, res) {
     const urgencyCount = urgencyWords.filter(word => 
       fullText.includes(word)
     ).length;
-    
+    Yes! Add the entire code block right at line 116 (after the } and before the // Return Field Notes-specific structured data comment).
+Here's exactly where to place it:
+javascript// Line 115
+    ).length;
+}  // ← This closing brace is line 115
+
+// ADD ALL THE NEW FUNCTIONS HERE (starting at line 116)
+
+// Cross-Industry Creative Sector Detection
+function detectCreativeSector(content, title) {
+  const sectors = {
+    design: ['designer', 'graphic design', 'visual design', 'UI/UX', 'branding', 'creative director'],
+    music: ['musician', 'music producer', 'songwriter', 'audio', 'streaming', 'record label'],
+    film: ['filmmaker', 'video editor', 'director', 'cinematographer', 'post-production', 'VFX'],
+    marketing: ['copywriter', 'content creator', 'social media', 'advertising', 'marketing creative'],
+    writing: ['writer', 'journalist', 'content writer', 'editor', 'publisher', 'author']
+  };
+  
+  const text = (content + ' ' + title).toLowerCase();
+  const detectedSectors = [];
+  
+  for (const [sector, keywords] of Object.entries(sectors)) {
+    if (keywords.some(keyword => text.includes(keyword))) {
+      detectedSectors.push(sector);
+    }
+  }
+  
+  return detectedSectors.length > 0 ? detectedSectors : ['general'];
+}
+
+// Career Impact Analysis
+function analyzeCareerImpact(content, title) {
+  const text = (content + ' ' + title).toLowerCase();
+  
+  const impactSignals = {
+    high: ['replace', 'automate', 'eliminate', 'reduce workforce', 'layoffs'],
+    medium: ['transform', 'change', 'adapt', 'reskill', 'evolve'],
+    low: ['supplement', 'assist', 'enhance', 'support', 'augment']
+  };
+  
+  for (const [level, keywords] of Object.entries(impactSignals)) {
+    if (keywords.some(keyword => text.includes(keyword))) {
+      return level;
+    }
+  }
+  
+  return 'unknown';
+}
+
+// Timeline Detection
+function extractTimeline(content, title) {
+  const text = content + ' ' + title;
+  const timelinePatterns = [
+    /(\d{4})/g,
+    /(next \d+ months?)/gi,
+    /(within \d+ years?)/gi,
+    /(by \d{4})/gi,
+    /(coming months?)/gi,
+    /(immediate|soon|near-term|long-term)/gi
+  ];
+  
+  const timelines = [];
+  timelinePatterns.forEach(pattern => {
+    const matches = text.match(pattern);
+    if (matches) timelines.push(...matches);
+  });
+  
+  return timelines.slice(0, 3);
+}
+
+function determineIntelligenceCategory(content, title) {
+  const text = (content + ' ' + title).toLowerCase();
+  
+  if (text.includes('earnings') || text.includes('sec filing') || text.includes('quarterly')) {
+    return 'Corporate Strategy';
+  }
+  if (text.includes('ceo') || text.includes('executive') || text.includes('leadership')) {
+    return 'Executive Signal';
+  }
+  if (text.includes('skills') || text.includes('jobs') || text.includes('career')) {
+    return 'Career Impact';
+  }
+  
+  return 'Industry Development';
+}
+
     // Return Field Notes-specific structured data
     res.json({
       success: true,
