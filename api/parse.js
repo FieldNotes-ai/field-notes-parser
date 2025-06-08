@@ -5,199 +5,182 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  
-  // Handle preflight requests
+
   if (req.method === 'OPTIONS') {
     res.status(200).end();
     return;
   }
 
-  // Handle both GET and POST requests for URL parameter
+  // Handle both GET and POST requests
   let url;
   if (req.method === 'POST') {
-    // Handle POST request with JSON body
     const body = req.body;
-    url = body?.url;
+    url = body.url;
   } else {
-    // Handle GET request with query parameter
     url = req.query.url;
   }
-  
+
   if (!url) {
-    return res.status(400).json({ 
+    return res.status(400).json({
       error: 'URL required',
       example: 'GET: https://your-app.vercel.app/api/parse?url=https://example.com/article OR POST: {"url": "https://example.com/article"}',
       method: req.method,
       received_query: req.query,
-      received_body: req.body
+      received_body: req.body || {}
     });
   }
-  
+
   try {
-    console.log('Parsing URL:', url, 'Method:', req.method);
     const result = await Parser.parse(url);
-    
-    // Field Notes Intelligence: Focus on creative industry + AI impact
-    const content = (result.content || '').toLowerCase();
-    const title = (result.title || '').toLowerCase();
+
+    if (!result) {
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to parse article',
+        url: url
+      });
+    }
+
+    // Content relevance signals for creative industry focus
+    const content = result.content?.toLowerCase() || '';
+    const title = result.title?.toLowerCase() || '';
     const fullText = content + ' ' + title;
-    
-    // Creative industry signals
+
     const creativitySignals = [
       'artist', 'designer', 'writer', 'musician', 'creative', 'content creator',
       'video editor', 'photographer', 'animator', 'illustrator', 'copywriter',
-      'film', 'music production', 'graphic design', 'marketing creative',
-      'game developer', 'web designer', 'art director', 'creative director',
-      'journalist', 'blogger', 'screenwriter', 'producer', 'director'
+      'film', 'music production', 'graphic design', 'marketing creative'
     ];
-    
-    // AI technology signals
+
     const aiSignals = [
       'artificial intelligence', 'machine learning', 'ai', 'automation',
-      'generative ai', 'chatgpt', 'gpt-4', 'midjourney', 'dall-e', 'stable diffusion',
-      'neural network', 'algorithm', 'deepfake', 'claude', 'bard', 'copilot',
-      'large language model', 'llm', 'text-to-image', 'text-to-video'
+      'generative ai', 'chatgpt', 'midjourney', 'dall-e', 'stable diffusion',
+      'neural network', 'algorithm', 'deepfake'
     ];
-    
-    // Job impact signals (what your audience cares about most)
+
     const jobImpactSignals = [
       'job', 'employment', 'workforce', 'replace', 'automate', 'future of work',
-      'displacement', 'hiring', 'layoff', 'skills', 'career', 'industry',
-      'human vs ai', 'obsolete', 'redundant', 'efficiency', 'productivity',
-      'threat', 'opportunity', 'reskill', 'upskill', 'adapt'
+      'displacement', 'hiring', 'layoff', 'skills', 'career', 'industry'
     ];
-    
+
     // Calculate relevance scores
-    const creativityScore = creativitySignals.filter(signal => 
+    const creativityScore = creativitySignals.filter(signal =>
       fullText.includes(signal)
     ).length;
-    
-    const aiScore = aiSignals.filter(signal => 
+
+    const aiScore = aiSignals.filter(signal =>
       fullText.includes(signal)
     ).length;
-    
-    const jobImpactScore = jobImpactSignals.filter(signal => 
+
+    const jobImpactScore = jobImpactSignals.filter(signal =>
       fullText.includes(signal)
     ).length;
-    
-    // Extract company mentions for future FOIA targeting
-    const companies = ['openai', 'adobe', 'google', 'microsoft', 'meta', 'apple', 
-                      'nvidia', 'stability ai', 'anthropic', 'midjourney', 'canva',
-                      'figma', 'autodesk', 'unity', 'epic games', 'disney', 'netflix'];
-    
-    const companyMentions = companies.filter(company => 
-      fullText.includes(company)
-    );
-    
-    // Determine content category for Airtable organization
-    let contentCategory = 'General Tech';
-    if (creativityScore > 2 && aiScore > 2) {
-      contentCategory = 'Direct Creative AI Impact';
-    } else if (jobImpactScore > 3) {
-      contentCategory = 'Workforce Changes';
-    } else if (aiScore > 3 && creativityScore > 0) {
-      contentCategory = 'AI Technology for Creatives';
-    } else if (creativityScore > 1) {
-      contentCategory = 'Creative Industry News';
-    }
-    
+
     // Calculate total relevance for auto-filtering
     const totalRelevance = creativityScore + aiScore + jobImpactScore;
-    const isRelevant = (creativityScore > 0 && aiScore > 0) || 
+    const isRelevant = (creativityScore > 0 && aiScore > 0) ||
                       (jobImpactScore > 2 && creativityScore > 0) ||
                       totalRelevance > 5;
-    
+
+    // Company mentions for tracking
+    const companies = ['OpenAI', 'Adobe', 'Google', 'Microsoft', 'Meta', 'Apple',
+                      'Nvidia', 'Stability AI', 'Anthropic', 'Midjourney'];
+    const companyMentions = companies.filter(company =>
+      fullText.includes(company.toLowerCase())
+    );
+
     // Urgency indicators for prioritization
-    const urgencyWords = ['breaking', 'announced', 'launches', 'releases', 
+    const urgencyWords = ['breaking', 'announced', 'launches', 'releases',
                          'new', 'first', 'major', 'significant', 'exclusive'];
-    const urgencyCount = urgencyWords.filter(word => 
+    const urgencyCount = urgencyWords.filter(word =>
       fullText.includes(word)
     ).length;
-    Yes! Add the entire code block right at line 116 (after the } and before the // Return Field Notes-specific structured data comment).
-Here's exactly where to place it:
-javascript// Line 115
-    ).length;
-}  // ← This closing brace is line 115
 
-// ADD ALL THE NEW FUNCTIONS HERE (starting at line 116)
-
-// Cross-Industry Creative Sector Detection
-function detectCreativeSector(content, title) {
-  const sectors = {
-    design: ['designer', 'graphic design', 'visual design', 'UI/UX', 'branding', 'creative director'],
-    music: ['musician', 'music producer', 'songwriter', 'audio', 'streaming', 'record label'],
-    film: ['filmmaker', 'video editor', 'director', 'cinematographer', 'post-production', 'VFX'],
-    marketing: ['copywriter', 'content creator', 'social media', 'advertising', 'marketing creative'],
-    writing: ['writer', 'journalist', 'content writer', 'editor', 'publisher', 'author']
-  };
-  
-  const text = (content + ' ' + title).toLowerCase();
-  const detectedSectors = [];
-  
-  for (const [sector, keywords] of Object.entries(sectors)) {
-    if (keywords.some(keyword => text.includes(keyword))) {
-      detectedSectors.push(sector);
+    // Cross-Industry Creative Sector Detection
+    function detectCreativeSector(content, title) {
+      const sectors = {
+        design: ['designer', 'graphic design', 'visual design', 'UI/UX', 'branding', 'creative director'],
+        music: ['musician', 'music producer', 'songwriter', 'audio', 'streaming', 'record label'],
+        film: ['filmmaker', 'video editor', 'director', 'cinematographer', 'post-production', 'VFX'],
+        marketing: ['copywriter', 'content creator', 'social media', 'advertising', 'marketing creative'],
+        writing: ['writer', 'journalist', 'content writer', 'editor', 'publisher', 'author']
+      };
+      
+      const text = (content + ' ' + title).toLowerCase();
+      const detectedSectors = [];
+      
+      for (const [sector, keywords] of Object.entries(sectors)) {
+        if (keywords.some(keyword => text.includes(keyword))) {
+          detectedSectors.push(sector);
+        }
+      }
+      
+      return detectedSectors.length > 0 ? detectedSectors : ['general'];
     }
-  }
-  
-  return detectedSectors.length > 0 ? detectedSectors : ['general'];
-}
 
-// Career Impact Analysis
-function analyzeCareerImpact(content, title) {
-  const text = (content + ' ' + title).toLowerCase();
-  
-  const impactSignals = {
-    high: ['replace', 'automate', 'eliminate', 'reduce workforce', 'layoffs'],
-    medium: ['transform', 'change', 'adapt', 'reskill', 'evolve'],
-    low: ['supplement', 'assist', 'enhance', 'support', 'augment']
-  };
-  
-  for (const [level, keywords] of Object.entries(impactSignals)) {
-    if (keywords.some(keyword => text.includes(keyword))) {
-      return level;
+    // Career Impact Analysis
+    function analyzeCareerImpact(content, title) {
+      const text = (content + ' ' + title).toLowerCase();
+      
+      const impactSignals = {
+        high: ['replace', 'automate', 'eliminate', 'reduce workforce', 'layoffs'],
+        medium: ['transform', 'change', 'adapt', 'reskill', 'evolve'],
+        low: ['supplement', 'assist', 'enhance', 'support', 'augment']
+      };
+      
+      for (const [level, keywords] of Object.entries(impactSignals)) {
+        if (keywords.some(keyword => text.includes(keyword))) {
+          return level;
+        }
+      }
+      
+      return 'unknown';
     }
-  }
-  
-  return 'unknown';
-}
 
-// Timeline Detection
-function extractTimeline(content, title) {
-  const text = content + ' ' + title;
-  const timelinePatterns = [
-    /(\d{4})/g,
-    /(next \d+ months?)/gi,
-    /(within \d+ years?)/gi,
-    /(by \d{4})/gi,
-    /(coming months?)/gi,
-    /(immediate|soon|near-term|long-term)/gi
-  ];
-  
-  const timelines = [];
-  timelinePatterns.forEach(pattern => {
-    const matches = text.match(pattern);
-    if (matches) timelines.push(...matches);
-  });
-  
-  return timelines.slice(0, 3);
-}
+    // Timeline Detection
+    function extractTimeline(content, title) {
+      const text = content + ' ' + title;
+      const timelinePatterns = [
+        /(\d{4})/g,
+        /(next \d+ months?)/gi,
+        /(within \d+ years?)/gi,
+        /(by \d{4})/gi,
+        /(coming months?)/gi,
+        /(immediate|soon|near-term|long-term)/gi
+      ];
+      
+      const timelines = [];
+      timelinePatterns.forEach(pattern => {
+        const matches = text.match(pattern);
+        if (matches) timelines.push(...matches);
+      });
+      
+      return timelines.slice(0, 3);
+    }
 
-function determineIntelligenceCategory(content, title) {
-  const text = (content + ' ' + title).toLowerCase();
-  
-  if (text.includes('earnings') || text.includes('sec filing') || text.includes('quarterly')) {
-    return 'Corporate Strategy';
-  }
-  if (text.includes('ceo') || text.includes('executive') || text.includes('leadership')) {
-    return 'Executive Signal';
-  }
-  if (text.includes('skills') || text.includes('jobs') || text.includes('career')) {
-    return 'Career Impact';
-  }
-  
-  return 'Industry Development';
-}
+    function determineIntelligenceCategory(content, title) {
+      const text = (content + ' ' + title).toLowerCase();
+      
+      if (text.includes('earnings') || text.includes('sec filing') || text.includes('quarterly')) {
+        return 'Corporate Strategy';
+      }
+      if (text.includes('ceo') || text.includes('executive') || text.includes('leadership')) {
+        return 'Executive Signal';
+      }
+      if (text.includes('skills') || text.includes('jobs') || text.includes('career')) {
+        return 'Career Impact';
+      }
+      
+      return 'Industry Development';
+    }
+
+    function determineCategory(creativity, ai, jobImpact) {
+      if (creativity > 2 && ai > 2) return 'Direct Creative AI Impact';
+      if (jobImpact > 3) return 'Workforce Changes';
+      if (ai > 3) return 'AI Technology Development';
+      if (creativity > 1) return 'Creative Industry News';
+      return 'General Tech';
+    }
 
     // Return Field Notes-specific structured data
     res.json({
@@ -211,7 +194,7 @@ function determineIntelligenceCategory(content, title) {
       published_date: result.date_published,
       word_count: result.word_count,
       lead_image: result.lead_image_url,
-      
+
       // Field Notes Intelligence Analysis
       relevance_analysis: {
         creativity_signals: creativityScore,
@@ -220,38 +203,48 @@ function determineIntelligenceCategory(content, title) {
         total_relevance_score: totalRelevance,
         is_relevant_to_mission: isRelevant
       },
-      
-      // Content categorization for Airtable
-      content_category: contentCategory,
+
+      // Enhanced Intelligence Fields
+      creative_sectors: detectCreativeSector(result.content || '', result.title || ''),
+      career_impact_level: analyzeCareerImpact(result.content || '', result.title || ''),
+      timeline_mentions: extractTimeline(result.content || '', result.title || ''),
+      cross_industry_potential: creativityScore > 1 && aiScore > 1,
+      intelligence_category: determineIntelligenceCategory(result.content || '', result.title || ''),
+
+      // Content Classification
+      content_category: determineCategory(creativityScore, aiScore, jobImpactScore),
       company_mentions: companyMentions,
       urgency_score: urgencyCount,
-      
-      // Audience value assessment
+
+      // Audience Value Assessment
       audience_value: {
-        helps_anxious_creatives: creativityScore > 0 && (aiScore > 1 || jobImpactScore > 1),
-        provides_actionable_info: jobImpactScore > 2 || urgencyCount > 1,
-        relevant_for_career_planning: jobImpactScore > 1 && creativityScore > 0
+        helps_anxious_creatives: isRelevant && (creativityScore > 0 || jobImpactScore > 1),
+        provides_actionable_info: jobImpactScore > 0 || urgencyCount > 2,
+        relevant_for_career_planning: jobImpactScore > 1 || creativityScore > 2
       },
-      
-      // Future FOIA preparation
-      foia_potential: companyMentions.length > 0 && totalRelevance > 4,
-      needs_deeper_research: aiScore > 3 && creativityScore > 2,
-      
-      // Debug info
+
+      // Future Intelligence Capabilities
+      foia_potential: companyMentions.length > 0 || 
+                     fullText.includes('policy') || 
+                     fullText.includes('regulation'),
+      needs_deeper_research: totalRelevance > 7 || urgencyCount > 3,
+
+      // Debug Information
       debug: {
         method_used: req.method,
-        url_received: url
+        url_received: url,
+        creativity_keywords_found: creativityScore,
+        ai_keywords_found: aiScore,
+        job_impact_keywords_found: jobImpactScore
       }
     });
-    
+
   } catch (error) {
-    console.error('Parse error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      error: 'Parse failed', 
+      error: 'Parse failed',
       details: error.message,
-      url: url,
-      method: req.method
+      url: url
     });
   }
 }
