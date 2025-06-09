@@ -47,9 +47,12 @@ export default async function handler(req, res) {
     const fullText = content + ' ' + title;
 
     const creativitySignals = [
-      'artist', 'designer', 'writer', 'musician', 'creative', 'content creator',
-      'video editor', 'photographer', 'animator', 'illustrator', 'copywriter',
-      'film', 'music production', 'graphic design', 'marketing creative'
+  'artist', 'designer', 'writer', 'musician', 'creative', 'content creator',
+  'video editor', 'photographer', 'animator', 'illustrator', 'copywriter',
+  'film', 'music production', 'graphic design', 'marketing creative',
+  'model', 'fashion designer', 'stylist', 'retoucher', 'photo editor',
+  'game designer', 'developer', 'sound designer', 'actor', 'comedian', 
+  'dancer', 'theater', 'performer', 'visual artist'
     ];
 
     const aiSignals = [
@@ -104,6 +107,10 @@ export default async function handler(req, res) {
         film: ['filmmaker', 'video editor', 'director', 'cinematographer', 'post-production', 'VFX'],
         marketing: ['copywriter', 'content creator', 'social media', 'advertising', 'marketing creative'],
         writing: ['writer', 'journalist', 'content writer', 'editor', 'publisher', 'author']
+        photography: ['photographer', 'photo editor', 'retoucher', 'visual artist'],
+fashion: ['model', 'fashion designer', 'stylist', 'fashion photographer'],  
+gaming: ['game designer', 'developer', 'animator', 'sound designer'],
+performing: ['actor', 'comedian', 'dancer', 'theater', 'performer']
       };
       
       const text = (content + ' ' + title).toLowerCase();
