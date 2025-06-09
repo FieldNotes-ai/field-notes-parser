@@ -120,21 +120,53 @@ export default async function handler(req, res) {
 
     // Career Impact Analysis
     function analyzeCareerImpact(content, title) {
-      const text = (content + ' ' + title).toLowerCase();
-      
-      const impactSignals = {
-        high: ['replace', 'automate', 'eliminate', 'reduce workforce', 'layoffs'],
-        medium: ['transform', 'change', 'adapt', 'reskill', 'evolve'],
-        low: ['supplement', 'assist', 'enhance', 'support', 'augment']
-      };
-      
-      for (const [level, keywords] of Object.entries(impactSignals)) {
-        if (keywords.some(keyword => text.includes(keyword))) {
-          return level;
-        }
-      }
-      
-      return 'unknown';
+  const text = (content + ' ' + title).toLowerCase();
+  
+  const impactSignals = {
+    high: [
+      // Direct displacement
+      'replace', 'automate', 'eliminate', 'reduce workforce', 'layoffs',
+      // Market disruption  
+      'disrupts', 'threatens', 'challenges traditional', 'makes obsolete',
+      // Major shifts
+      'fundamental change', 'industry transformation', 'new era'
+    ],
+    medium: [
+      // Adaptation required
+      'transform', 'change', 'adapt', 'reskill', 'evolve', 'shift',
+      // New tools/processes
+      'new workflow', 'changes how', 'different approach', 'updated skills',
+      // Competitive pressure
+      'competitive advantage', 'stay relevant', 'keep up'
+    ],
+    low: [
+      // Assistance/enhancement
+      'supplement', 'assist', 'enhance', 'support', 'augment', 'helps with',
+      // Optional tools
+      'option for', 'available to', 'can use', 'might help'
+    ]
+  };
+  
+  // Score each level
+  let highScore = 0, mediumScore = 0, lowScore = 0;
+  
+  for (const keyword of impactSignals.high) {
+    if (text.includes(keyword)) highScore++;
+  }
+  for (const keyword of impactSignals.medium) {
+    if (text.includes(keyword)) mediumScore++;
+  }
+  for (const keyword of impactSignals.low) {
+    if (text.includes(keyword)) lowScore++;
+  }
+  
+  // Return highest scoring category
+  if (highScore > 0) return 'high';
+  if (mediumScore > 0) return 'medium';
+  if (lowScore > 0) return 'low';
+  
+  return 'unknown';
+
     }
 
     // Timeline Detection
