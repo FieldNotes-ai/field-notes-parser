@@ -236,19 +236,36 @@ export default async function handler(req, res) {
       return detectedSectors.length > 0 ? detectedSectors : ['none'];
     }
 
-    // Career Impact Analysis
+    // Career Impact Analysis - Enhanced
     function analyzeCareerImpact(content, title) {
       const text = ((content || '') + ' ' + (title || '')).toLowerCase();
       
+      // If no content, return unknown
+      if (!content || content.length < 50) {
+        return 'unknown';
+      }
+      
       const impactSignals = {
-        high: ['replace', 'automate', 'eliminate', 'reduce workforce', 'layoffs', 'obsolete'],
-        medium: ['transform', 'change', 'adapt', 'reskill', 'evolve', 'shift'],
-        low: ['supplement', 'assist', 'enhance', 'support', 'augment', 'help']
+        high: ['replace', 'automate', 'eliminate', 'reduce workforce', 'layoffs', 'disrupt', 'threatens', 'obsolete', 'displacement'],
+        medium: ['transform', 'change', 'adapt', 'reskill', 'evolve', 'shift', 'impact', 'affects', 'alter', 'modify'],
+        low: ['supplement', 'assist', 'enhance', 'support', 'augment', 'improve', 'help', 'enable', 'empower']
       };
       
+      // Check for impact keywords
       for (const [level, keywords] of Object.entries(impactSignals)) {
         if (keywords.some(keyword => text.includes(keyword))) {
           return level;
+        }
+      }
+      
+      // Fallback logic based on content type
+      // If it's about AI tools or features, default to medium
+      if (text.includes('ai') || text.includes('artificial intelligence')) {
+        if (text.includes('tool') || text.includes('feature') || text.includes('update')) {
+          return 'low';
+        }
+        if (text.includes('revenue') || text.includes('funding') || text.includes('investment')) {
+          return 'medium';
         }
       }
       
@@ -379,9 +396,9 @@ export default async function handler(req, res) {
         is_relevant_to_mission: isRelevant
       },
 
-      // Enhanced Intelligence Fields (matching Airtable field names)
+      // Enhanced Intelligence Fields
       creative_sectors: detectCreativeSector(result.content, result.title),
-      'Career Impact Level': analyzeCareerImpact(result.content, result.title), // Match Airtable field name
+      career_impact_level: analyzeCareerImpact(result.content, result.title), // Back to underscores!
       timeline_mentions: extractTimeline(result.content, result.title),
       cross_industry_potential: creativityScore > 1 && aiScore > 1,
       intelligence_category: determineIntelligenceCategory(result.content, result.title),
